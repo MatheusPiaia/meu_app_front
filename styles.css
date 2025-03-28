@@ -1,0 +1,75 @@
+.cabecalho {
+    color: rgb(8, 8, 8);
+    display:flex;        
+    justify-content:center;
+    align-items: center; 
+    font-size:clamp(5px, 5vw, 20px);
+    
+}
+
+.nav-link, .navbar-brand{
+    cursor: pointer;
+}
+
+.my-container {
+    width: 100%;
+    height: auto; 
+    display: flex;
+    justify-content: center;    
+    align-items: center;
+    
+}
+
+.my-container-content {
+    width: 60%;
+}
+
+.newItem {
+    padding: 30px 40px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    
+}
+
+.items {
+    width:100%;    
+    font-size:18px;    
+    margin: 0px;    
+    justify-content: center;
+    cursor: pointer;         
+    color: white;
+    border-width: 1px;
+    
+}
+
+.close:hover {
+    color: #f44336;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+.edit:hover {
+    color: green;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+tbody > tr:nth-child(odd){
+    background-color: #414040;
+    
+}
+
+tbody > tr:nth-child(even){    
+    background-color: #0f0f0fdc;
+}
+
+thead {
+    background-color: #0f0f0fdc;
+}
+
+tbody > tr:hover {
+    background: rgb(200, 199, 199);
+}
+
+
