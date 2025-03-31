@@ -12,7 +12,7 @@
    
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-          <a class="navbar-brand" onclick="navigate('#home')">Gestão Empilhadeiras</a>
+          <a class="navbar-brand" onclick="navigate('#home')">Manutenção Empilhadeiras</a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -32,8 +32,131 @@
     <div id="app"></div>
 
     <template id="home">
-        <h1 class="cabecalho">Home</h1>
-        <p>Bem-vindo à nossa SPA!</p>
+        <div class="my-container">
+            <div class="my-container-content-fluid">      
+                <h class="cabecalho">Cadastro Manutenções</h>
+                
+                    <!-- Button trigger modal -->
+                <div>
+                    <button type="button" class="btn btn-primary btn-modal" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Cadastrar nova manutenção
+                    </button>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Cadastrar Manutenção</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            <li>Escolha um equipamento
+                                <select id="equipamentSelect"></select>
+                                    <option value=""></option>                               
+                            </li>
+                            <li>Matrícula do Técnico: <select id="idTechSelect"></select>
+                                <option value=""></option> </li>
+                            <li>Status:
+                                <select id="newStatus">
+                                    <option value="Em manutenção">Em Manutenção</option>
+                                    <option value="Na fila">Na fila</option>
+                                    <option value="Aguardando peca">Aguardando peça</option>
+                                    <option value="Finalizado">Finalizado</option>
+                                </select>
+                                </li>
+                            <li>Tipo manutenção:
+                                <select id="newImpact">
+                                    <option value="Corretiva">Corretiva</option>
+                                    <option value="Preventiva">Preventiva</option>                                                              
+                                </select></li>
+                            <li>Previsão conclusão: <input type:"datetime-local" id="newTime"> </li>
+                         
+                            
+                        </ul>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" onclick="newEquipament()" class="btn btn-primary">Salvar alterações</button>
+                    </div>
+                    </div>
+            </div>
+        </div>
+            <div class="my-container-grid">
+                <div class="item-a">
+                    <h class="table-title"><i class="bi bi-tools"></i>Equipamentos Em Manutenção
+                        <i class="bi bi-tools"></i></h>                    
+                    <table id="myTableMaintenance" class="items">
+                        <thead><tr>
+                            <th>Equipamento</th>
+                            <th>Matrícula Técnico</th>
+                            <th>Tipo de Manutenção</th>
+                            <th>Comentário</th>
+                            <th>Previsão conclusão</th>                                
+                            <th><i class="bi bi-check-lg"></i></th>
+                            <th><i class="bi bi-hourglass-split"></i></th>
+                            <th><i class="bi bi-pencil-square"></i></th>
+                            <th><i class="bi bi-trash"></i></th>
+                        </tr></thead>
+                        <tbody id="myTableMaintenanceBody"></tbody>
+                    </table>
+                </div>
+                <div class="item-b">
+                    <h class="table-title"><i class="bi bi-hourglass-split"></i> Equipamentos Aguardando Peças
+                        <i class="bi bi-hourglass-split"></i></h>
+                    <table id="myTableMaintenance" class="items">
+                        <thead><tr>
+                            <th>Equipamento</th>
+                            <th>Matrícula Técnico</th>
+                            <th>Tipo de Manutenção</th>
+                            <th>Comentário</th>
+                            <th>Previsão conclusão</th>                                
+                            <th><i class="bi bi-tools"></i></th>
+                            <th><i class="bi bi-pencil-square"></i></th>
+                            <th><i class="bi bi-trash"></i></th>
+                        </tr></thead>
+                        <tbody id="myTableMaintenanceBody"></tbody>
+                    </table>
+                </div>
+                <div class="item-c">
+                    <table id="myTableMaintenance" class="items">
+                        <h class="table-title">Equipamentos na fila para Manutenção</h>
+                        <thead><tr>
+                            <th>Equipamento</th>
+                            <th>Matrícula Técnico</th>
+                            <th>Tipo de Manutenção</th>
+                            <th>Comentário</th>
+                            <th>Previsão conclusão</th>                                
+                            <th><i class="bi bi-tools"></i></th>
+                            <th><i class="bi bi-hourglass-split"></i></th>
+                            <th><i class="bi bi-pencil-square"></i></th>
+                            <th><i class="bi bi-trash"></i></th>
+                        </tr></thead>
+                        <tbody id="myTableMaintenanceBody"></tbody>
+                    </table>
+                </div>
+                <div class="item-d">
+                    <table id="myTableMaintenance" class="items">
+                        <h class="table-title"><i class="bi bi-check-lg"></i> Equipamentos Finalizados 
+                            <i class="bi bi-check-lg"></i></h>
+                        <thead><tr>
+                            <th>Equipamento</th>
+                            <th>Matrícula Técnico</th>
+                            <th>Tipo de Manutenção</th>
+                            <th>Comentário</th>
+                            <th>Horário conclusão</th>                                
+                            <th><i class="bi bi-check2-all"></i></th>
+                            <th><i class="bi bi-trash"></i></th>
+                        </tr></thead>
+                        <tbody id="myTableMaintenanceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        
+        
         
     </template>
 
@@ -100,8 +223,62 @@
     </template>
 
     <template id="tecnicos">
-        <h1>Gestão Técnicos</h1>
-        <p>Entre em contato conosco.</p>
+        <div class="my-container">
+            <div class="my-container-content">      
+                <h class="cabecalho">Cadastro Técnicos</h>
+                
+                    <!-- Button trigger modal -->
+                <div>
+                    <button type="button" class="btn btn-primary btn-modal" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Cadastrar novo Técnico
+                    </button>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Cadastrar Técnico</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            <li>Nome do Técnico: <input type="text" id="newTechnician"> </li>
+                            <li>Matrícula do técnico: <input type="text" id="newTechnicianId"> </li>
+                            <li>Turno:
+                                <select id="newShift">
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="Comercial">Comercial</option>
+                                </select> </li>                            
+                        </ul>                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" onclick="newTechnician()" class="btn btn-primary">Salvar alterações</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Tabela com equipamentos existentes -->    
+                <section>
+                    <table id="myTableTechnicians" class="items">
+                        <thead><tr class="items">
+                            <th>Nome</th>
+                            <th>Matrícula</th>
+                            <th>Turno</th>                            
+                            <th><i class="bi bi-pencil-square"></i></th>
+                            <th><i class="bi bi-trash"></i></th>
+                        </tr></thead>
+                        <tbody id="myTableTechniciansBody"></tbody>
+                    </table>
+                </section>
+            </div>
+        </div>   
+        
     </template>
 
     <template id="not-found">

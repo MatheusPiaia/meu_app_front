@@ -4,13 +4,30 @@ const routes = {
     "#tecnicos": "tecnicos"
 };
 
+const routeHandlers = {
+  "#home": function () {
+  console.log("Página inicial carregada");
+  getMaintenances();
+  },
+  "#equipamentos": function(){
+    getEquipaments();
+  },   
+
+  "#tecnicos": function(){
+    getTechnicians();
+  }
+};
+
 function renderPage() {
-    const path = window.location.hash || "#home"; // Default para home
+    const path = window.location.hash || "#home";
     const templateId = routes[path] || "not-found";
     const template = document.getElementById(templateId);
     if (template) {
         document.getElementById("app").innerHTML = template.innerHTML;
     }
+    if (routeHandlers[path]) {
+      routeHandlers[path]();
+  }
 }
 
 function navigate(hash) {
@@ -20,8 +37,15 @@ function navigate(hash) {
 // Detecta mudança no hash da URL e carrega a página correspondente
 window.addEventListener("hashchange", renderPage);
 
+document.addEventListener("DOMContentLoaded", renderPage);
 // Carrega a página inicial ao abrir
 window.onload = renderPage;
+
+/*
+----------------------------------------------------------------------------------------
+FUNÇÕES REFERENTES A TELA EQUIPAMENTOS
+----------------------------------------------------------------------------------------
+*/
 
 /*
   --------------------------------------------------------------------------------------
@@ -40,16 +64,21 @@ async function getEquipaments() {
     let data = await response.json();
     // Limpa a lista antes de adicionar novos itens
     document.getElementById("myTableEquipamentBody").innerHTML = "";
-    data.equipamentos.forEach(item => insertList(item.nome, item.modelo, item.setor, item.impacto))
+    data.equipamentos.forEach(item => insertEquipamentList(item.nome, item.modelo, item.setor, item.impacto))
     }
   catch (error) {
     console.error("Erro ao buscar equipamentos", error);
     return null;
   } 
 }
- document.addEventListener("DOMContentLoaded", getEquipaments());
+ //document.addEventListener("DOMContentLoaded", getEquipaments());
 
 
+ /*
+  --------------------------------------------------------------------------------------
+  Função para adicionar a um equipamento ao servidor via requisição POST
+  --------------------------------------------------------------------------------------
+*/
 async function postEquipament(newEquipament, newModel, newSector, newImpact){
   const formData = new FormData();
   formData.append("nome", newEquipament);
@@ -73,6 +102,32 @@ async function postEquipament(newEquipament, newModel, newSector, newImpact){
     alert("Erro ao cadastrar Equipamento, Equipamento duplicado!")
     return null;
   } 
+}
+
+/*
+  --------------------------------------------------------------------------------------
+  Função para remover um equipamento do servidor via requisição DELETE
+  --------------------------------------------------------------------------------------
+*/
+
+async function deleteEquipament(newEquipament){
+  
+  try{
+    let response = await fetch(`http://127.0.0.1:5000/equipamento?nome=${encodeURIComponent(newEquipament)}`, {
+      method: "DELETE",      
+    });
+
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    getEquipaments();
+    alert("Equipamento removido da base");
+  }
+  catch{
+    console.error("Erro ao deletar equipamento", error);
+    alert("Erro ao deletar equipamento, manutenção neste equipamento em andamento");
+    return null;
+  }
 }
 
 /*
@@ -109,18 +164,17 @@ const insertButtonEdit = (parent) => {
   --------------------------------------------------------------------------------------
 */
 const removeElement = () => {
-    let close = document.getElementsByClassName("close");
-    // var table = document.getElementById('myTable');
+    let close = document.getElementsByClassName("close");    
     let i;
     console.log(close.length);
     for (i = 0; i < close.length; i++) {
       close[i].onclick = function () {
         let div = this.parentElement.parentElement;
+        console.log(div);
         const nomeItem = div.getElementsByTagName('td')[0].innerHTML
-        if (confirm("Você tem certeza?")) {
-          div.remove()
-          deleteItem(nomeItem)
-          alert("Removido!");
+        if (confirm("Você tem certeza?")) {          
+          deleteEquipament(nomeItem);
+          
         }
       }
     }
@@ -150,7 +204,7 @@ const newEquipament = () => {
     }
 }
 
-const insertList = (equipamentName, Model, Sector, Impact) => {
+const insertEquipamentList = (equipamentName, Model, Sector, Impact) => {
     let equipament = [equipamentName, Model, Sector, Impact]
     let tableEquipament = document.getElementById("myTableEquipamentBody");
     let row = tableEquipament.insertRow();
@@ -166,4 +220,192 @@ const insertList = (equipamentName, Model, Sector, Impact) => {
       document.getElementById("newSector").value = "";      
     
       removeElement();
+}
+
+
+/*
+----------------------------------------------------------------------------------------
+FUNÇÕES REFERENTES A TELA TÉCNICOS
+----------------------------------------------------------------------------------------
+*/
+
+/*
+  --------------------------------------------------------------------------------------
+  Função para obter a lista de técnicos existente do servidor via requisição GET
+  --------------------------------------------------------------------------------------
+*/
+
+async function getTechnicians() {
+  try {
+    let response = await fetch('http://127.0.0.1:5000/tecnicos');
+    console.log(response);
+    
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    
+    let data = await response.json();
+    console.log(data);    
+    // Limpa a lista antes de adicionar novos itens
+    document.getElementById("myTableTechniciansBody").innerHTML = "";
+        data.tecnicos.forEach(item => insertTechnicianList(item.nome, item.matricula, item.turno))
+    
+    }
+  catch (error) {
+    console.error("Erro ao buscar Técnicos", error);
+    return null;
+  } 
+}
+
+ /*
+  --------------------------------------------------------------------------------------
+  Função para adicionar um técnico ao servidor via requisição POST
+  --------------------------------------------------------------------------------------
+*/
+async function postTechnician(newTechnician, newTechnicianId, newShift){
+  const formData = new FormData();
+  formData.append("nome", newTechnician);
+  formData.append("matricula", newTechnicianId);
+  formData.append("turno", newShift);       
+  try {
+    let response = await fetch('http://127.0.0.1:5000/tecnico', {
+      method: "POST", 
+      body: formData
+    });   
+
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    getTechnicians();
+    alert("Técnico Adicionado");
+  }
+  catch (error) {
+    console.error("Erro ao cadastrar técnico", error);
+    alert("Erro ao cadastrar Técnico, Matricula duplicada!")
+    return null;
+  } 
+}
+
+/*
+  --------------------------------------------------------------------------------------
+  Função para remover um equipamento do servidor via requisição DELETE
+  --------------------------------------------------------------------------------------
+*/
+
+async function deleteTechnician(newTechnicianId){
+  
+  try{
+    let response = await fetch(`http://127.0.0.1:5000/tecnico?matricula=${encodeURIComponent(newTechnicianId)}`, {
+      method: "DELETE",      
+    });
+
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    getTechnicians();
+    alert("Técnico removido da base");
+  }
+  catch{
+    console.error("Erro ao deletar técnico", error);
+    alert("Erro ao deletar técnico, Técnico com manutenção em andamento");
+    return null;
+  }
+}
+
+/*
+  --------------------------------------------------------------------------------------
+  Função para remover um técnico da lista de acordo com o click no botão close
+  --------------------------------------------------------------------------------------
+*/
+const removeElementTechnician = () => {
+  let close = document.getElementsByClassName("close");    
+  let i;
+  console.log(close.length);
+  for (i = 0; i < close.length; i++) {
+    close[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      console.log(div);
+      const matricula = div.getElementsByTagName('td')[1].innerHTML
+      if (confirm("Você tem certeza?")) {          
+        deleteTechnician(matricula);
+        
+      }
+    }
+  }
+}
+
+const insertTechnicianList = (technicianName, technicianId, Shift) => {
+  let technician = [technicianName, technicianId, Shift]
+  let tableTechnician = document.getElementById("myTableTechniciansBody");
+  let row = tableTechnician.insertRow();
+
+  for (var i = 0; i < technician.length; i++) {
+      var cel = row.insertCell(i);
+      cel.textContent = technician[i];
+    }
+    insertButtonEdit(row.insertCell(-1))
+    insertButton(row.insertCell(-1))      
+    document.getElementById("newTechnician").value = "";
+    document.getElementById("newTechnicianId").value = "";
+    document.getElementById("newShift").value = "";      
+  
+    removeElementTechnician();
+}
+
+const newTechnician = () => {
+  let inputTechnician = document.getElementById("newTechnician").value;
+  let inputId = document.getElementById("newTechnicianId").value;
+  let inputShift = document.getElementById("newShift").value;  
+
+  if (inputTechnician === ''){
+      alert("Escreva o nome do Técnico");
+  }else if (inputId === ''){
+      alert("Escreva a matrícula do técnico");
+  }else if (inputShift === ''){
+      alert("Escreva o turno de trabalho");  
+  }else {       
+      postTechnician(inputTechnician, inputId, inputShift)
+  }
+}
+
+/* Função para buscar todas as manutenções cadastradas no banco, para servir como base para as opções do select
+*/
+async function getMaintenances() {
+  try {
+    let response = await fetch('http://127.0.0.1:5000/manutencoes');
+    console.log(response);
+    
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    
+    let data = await response.json();
+    let selectEquip = document.getElementById("equipamentSelect");
+    let selectTech = document.getElementById("idTechSelect")
+    selectEquip.innerHTML = "";
+    selectTech.innerHTML = "";
+
+    let equipamentos = data.equipamentos;       
+
+    equipamentos.forEach(item => {
+      let option =  document.createElement("option");      
+      option.value = item.nome_equipamento;
+      option.textContent = item.nome_equipamento;
+      selectEquip.appendChild(option); 
+          
+      let optionTech =  document.createElement("option");  
+      optionTech.value = item.matricula_tecnico;
+      optionTech.textContent = item.matricula_tecnico;
+      selectTech.appendChild(optionTech);
+
+    })
+    
+    
+    
+    
+    }
+  catch (error) {
+    console.error("Erro ao buscar Técnicos", error);
+    return null;
+  } 
 }
