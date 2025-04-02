@@ -7,7 +7,10 @@ const routes = {
 const routeHandlers = {
   "#home": function () {
   console.log("Página inicial carregada");
-  getMaintenances();
+  //getMaintenances();
+  getTechnicians();
+  getEquipaments();
+  getMaintenancesStatus();
   },
   "#equipamentos": function(){
     getEquipaments();
@@ -62,18 +65,32 @@ async function getEquipaments() {
     }
 
     let data = await response.json();
+    let selectEquip = document.getElementById("equipamentSelect");
     // Limpa a lista antes de adicionar novos itens
-    document.getElementById("myTableEquipamentBody").innerHTML = "";
-    data.equipamentos.forEach(item => insertEquipamentList(item.nome, item.modelo, item.setor, item.impacto))
+    if (document.getElementById("myTableEquipamentBody")){
+      document.getElementById("myTableEquipamentBody").innerHTML = "";
+    } else if (document.getElementById("equipamentSelect")){  
+      document.getElementById("equipamentSelect").innerHTML="";
     }
+
+    data.equipamentos.forEach(item => {
+      if (document.getElementById("myTableEquipamentBody")){
+        insertEquipamentList(item.nome, item.modelo, item.setor, item.impacto);
+      } else if (document.getElementById("equipamentSelect")){
+        let option =  document.createElement("option");      
+        option.value = item.nome;
+        option.textContent = item.nome;
+        selectEquip.appendChild(option);
+      }
+    })
+  }
+
   catch (error) {
     console.error("Erro ao buscar equipamentos", error);
     return null;
   } 
 }
- //document.addEventListener("DOMContentLoaded", getEquipaments());
-
-
+ 
  /*
   --------------------------------------------------------------------------------------
   Função para adicionar a um equipamento ao servidor via requisição POST
@@ -154,6 +171,43 @@ const insertButtonEdit = (parent) => {
     let txt = document.createElement("i");
     span.className = "edit";
     txt.className = "bi bi-pencil-square";
+    span.appendChild(txt);
+    parent.appendChild(span);
+  }
+
+
+  const insertButtonDone = (parent) => {
+    let span = document.createElement("span");
+    let txt = document.createElement("i");
+    span.className = "done";
+    txt.className = "bi bi-check-lg";
+    span.appendChild(txt);
+    parent.appendChild(span);
+  }
+
+  const insertButtonWaiting = (parent) => {
+    let span = document.createElement("span");
+    let txt = document.createElement("i");
+    span.className = "waiting";
+    txt.className = "bi bi-hourglass-split";
+    span.appendChild(txt);
+    parent.appendChild(span);
+  }
+
+  const insertButtonDoing = (parent) => {
+    let span = document.createElement("span");
+    let txt = document.createElement("i");
+    span.className = "doing";
+    txt.className = "bi bi-tools";
+    span.appendChild(txt);
+    parent.appendChild(span);
+  }
+
+  const insertButtonCheck = (parent) => {
+    let span = document.createElement("span");
+    let txt = document.createElement("i");
+    span.className = "check";
+    txt.className = "bi bi-check2-all";
     span.appendChild(txt);
     parent.appendChild(span);
   }
@@ -245,10 +299,25 @@ async function getTechnicians() {
     }
     
     let data = await response.json();
+    let selectTech = document.getElementById("idTechSelect");
     console.log(data);    
     // Limpa a lista antes de adicionar novos itens
+    if(document.getElementById("myTableTechniciansBody")){
     document.getElementById("myTableTechniciansBody").innerHTML = "";
-        data.tecnicos.forEach(item => insertTechnicianList(item.nome, item.matricula, item.turno))
+    } else if (document.getElementById("idTechSelect")){
+      document.getElementById("idTechSelect").innerHTML = "";
+    }
+        data.tecnicos.forEach(item =>{
+          if(document.getElementById("myTableTechniciansBody")){
+          insertTechnicianList(item.nome, item.matricula, item.turno);
+          } else if (document.getElementById("idTechSelect")){                  
+          let optionTech =  document.createElement("option");
+          optionTech.value = item.matricula;
+          optionTech.textContent = item.nome;
+          selectTech.appendChild(optionTech);
+          }
+        })    
+        
     
     }
   catch (error) {
@@ -368,44 +437,124 @@ const newTechnician = () => {
   }
 }
 
-/* Função para buscar todas as manutenções cadastradas no banco, para servir como base para as opções do select
-*/
-async function getMaintenances() {
-  try {
-    let response = await fetch('http://127.0.0.1:5000/manutencoes');
-    console.log(response);
-    
+
+async function postMaintenance(equipamentSelect, idTechSelect, newStatus, newType, newDate, newTime, newComment){
+  const formData = new FormData();
+  const date = document.getElementById("newDate").value;
+  const time = document.getElementById("newTime").value;
+  const previsaoConclusao = `${date}T${time}`;
+  const nome_equipamento = document.getElementById("equipamentSelect").value;
+  const matricula_tecnico = document.getElementById("idTechSelect").value;
+  const status = document.getElementById("newStatus").value;
+  const tipo_manutencao = document.getElementById("newType").value;
+  const comentario = document.getElementById("newComment").value;
+   
+  formData.append("nome_equipamento", nome_equipamento);
+  formData.append("matricula_tecnico", matricula_tecnico);
+  formData.append("status", status);
+  formData.append("tipo_manutencao", tipo_manutencao);
+  formData.append("comentario", comentario);
+  formData.append("previsao_conclusao", previsaoConclusao);
+
+  try{
+    let response =await fetch('http://127.0.0.1:5000/manutencao',{
+      method:"POST",
+      body: formData
+    });
     if(!response.ok){
       throw new Error(`Erro HTTP! Status: ${response.status}`);
     }
+    getMaintenancesStatus();
+    alert("Manutenção Adicionada");
+  }
+  catch (error) {
+    console.error("Erro ao cadastrar manutenção", error);
+    alert("Erro ao cadastrar Manutenção!")
+    return null;
+  }  
+}
+
+const getIdStatusTable = (status) =>{
+  if(status === "Em manutencao"){
+    return "myTableMaintenanceDoingBody";
+  }
+  if(status === "Na fila"){
+    return "myTableMaintenanceQueueBody";
+  }
+  if(status === "Aguardando peca"){
+    return "myTableMaintenanceWaitingBody";
+  }
+  return "myTableMaintenanceDoneBody";
+
+}
+
+const getMaintenancesStatus = () => {
+  getMaintenances("Em manutencao");
+  getMaintenances("Na fila");
+  getMaintenances("Aguardando peca");
+  getMaintenances("Finalizado");
+}
+
+async function getMaintenances(status){
+
+  try{
+    let response = await fetch(`http://127.0.0.1:5000/manutencoes/status?status=${encodeURIComponent(status)}`);
+
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    } 
     
-    let data = await response.json();
-    let selectEquip = document.getElementById("equipamentSelect");
-    let selectTech = document.getElementById("idTechSelect")
-    selectEquip.innerHTML = "";
-    selectTech.innerHTML = "";
-
-    let equipamentos = data.equipamentos;       
-
-    equipamentos.forEach(item => {
-      let option =  document.createElement("option");      
-      option.value = item.nome_equipamento;
-      option.textContent = item.nome_equipamento;
-      selectEquip.appendChild(option); 
-          
-      let optionTech =  document.createElement("option");  
-      optionTech.value = item.matricula_tecnico;
-      optionTech.textContent = item.matricula_tecnico;
-      selectTech.appendChild(optionTech);
-
+    let data = await response.json();    
+    document.getElementById(getIdStatusTable(status)).innerHTML = "";      
+    data.manutencoes.forEach(item => {
+    insertMaintenanceList(item, status);
     })
     
-    
-    
-    
-    }
+  }
   catch (error) {
-    console.error("Erro ao buscar Técnicos", error);
+    console.error("Erro ao buscar manutenção", error);    
     return null;
-  } 
+  }  
+
 }
+
+
+
+const insertMaintenanceList = (item, status) => {  
+    let maintenance = [item.nome_equipamento, item.matricula_tecnico, item.tipo_manutencao, item.comentario, item.previsao_conclusao];
+    let tableMaintenance = document.getElementById(getIdStatusTable(status));
+    let row = tableMaintenance.insertRow();
+
+    for (var i = 0; i < maintenance.length; i++) {
+        var cel = row.insertCell(i);
+        cel.textContent = maintenance[i];
+      }
+    if(status === "Em manutencao"){
+      insertButtonDone(row.insertCell(-1));
+      insertButtonWaiting(row.insertCell(-1));
+      insertButtonEdit(row.insertCell(-1));      
+    }
+    else if(status === "Na fila"){
+      insertButtonDoing(row.insertCell(-1));
+      insertButtonWaiting(row.insertCell(-1));
+      insertButtonEdit(row.insertCell(-1));
+    }
+    else if(status === "Aguardando peca"){
+      insertButtonDoing(row.insertCell(-1));
+      insertButtonEdit(row.insertCell(-1));
+
+    }
+    else if(status === "Finalizado"){  
+      insertButtonCheck(row.insertCell(-1));       
+    }
+    
+    insertButton(row.insertCell(-1));
+    document.getElementById("equipamentSelect").value="";
+    document.getElementById("idTechSelect").value="";
+    document.getElementById("newStatus").value="";
+    document.getElementById("newType").value="";
+    document.getElementById("newDate").value="";
+    document.getElementById("newTime").value="";
+    document.getElementById("newComment").value="";
+}
+

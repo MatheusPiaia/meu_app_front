@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,18 +61,20 @@
                                 <option value=""></option> </li>
                             <li>Status:
                                 <select id="newStatus">
-                                    <option value="Em manutenção">Em Manutenção</option>
+                                    <option value="Em manutencao">Em Manutenção</option>
                                     <option value="Na fila">Na fila</option>
                                     <option value="Aguardando peca">Aguardando peça</option>
                                     <option value="Finalizado">Finalizado</option>
                                 </select>
                                 </li>
                             <li>Tipo manutenção:
-                                <select id="newImpact">
+                                <select id="newType">
                                     <option value="Corretiva">Corretiva</option>
                                     <option value="Preventiva">Preventiva</option>                                                              
                                 </select></li>
-                            <li>Previsão conclusão: <input type:"datetime-local" id="newTime"> </li>
+                            <li>Previsão conclusão: <input type="date" id="newDate">
+                                <input type="time" id="newTime"></li>
+                            <li>Comentário <input type="text" id="newComment"></li>                         
                          
                             
                         </ul>
@@ -80,7 +82,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <button type="button" onclick="newEquipament()" class="btn btn-primary">Salvar alterações</button>
+                        <button type="button" onclick="postMaintenance()" class="btn btn-primary">Salvar alterações</button>
                     </div>
                     </div>
             </div>
@@ -89,7 +91,7 @@
                 <div class="item-a">
                     <h class="table-title"><i class="bi bi-tools"></i>Equipamentos Em Manutenção
                         <i class="bi bi-tools"></i></h>                    
-                    <table id="myTableMaintenance" class="items">
+                    <table id="myTableMaintenanceDoing" class="items">
                         <thead><tr>
                             <th>Equipamento</th>
                             <th>Matrícula Técnico</th>
@@ -101,13 +103,13 @@
                             <th><i class="bi bi-pencil-square"></i></th>
                             <th><i class="bi bi-trash"></i></th>
                         </tr></thead>
-                        <tbody id="myTableMaintenanceBody"></tbody>
+                        <tbody id="myTableMaintenanceDoingBody"></tbody>
                     </table>
                 </div>
                 <div class="item-b">
                     <h class="table-title"><i class="bi bi-hourglass-split"></i> Equipamentos Aguardando Peças
                         <i class="bi bi-hourglass-split"></i></h>
-                    <table id="myTableMaintenance" class="items">
+                    <table id="myTableMaintenanceWaiting" class="items">
                         <thead><tr>
                             <th>Equipamento</th>
                             <th>Matrícula Técnico</th>
@@ -118,11 +120,11 @@
                             <th><i class="bi bi-pencil-square"></i></th>
                             <th><i class="bi bi-trash"></i></th>
                         </tr></thead>
-                        <tbody id="myTableMaintenanceBody"></tbody>
+                        <tbody id="myTableMaintenanceWaitingBody"></tbody>
                     </table>
                 </div>
                 <div class="item-c">
-                    <table id="myTableMaintenance" class="items">
+                    <table id="myTableMaintenanceQueue" class="items">
                         <h class="table-title">Equipamentos na fila para Manutenção</h>
                         <thead><tr>
                             <th>Equipamento</th>
@@ -135,11 +137,11 @@
                             <th><i class="bi bi-pencil-square"></i></th>
                             <th><i class="bi bi-trash"></i></th>
                         </tr></thead>
-                        <tbody id="myTableMaintenanceBody"></tbody>
+                        <tbody id="myTableMaintenanceQueueBody"></tbody>
                     </table>
                 </div>
                 <div class="item-d">
-                    <table id="myTableMaintenance" class="items">
+                    <table id="myTableMaintenanceDone" class="items">
                         <h class="table-title"><i class="bi bi-check-lg"></i> Equipamentos Finalizados 
                             <i class="bi bi-check-lg"></i></h>
                         <thead><tr>
@@ -151,7 +153,7 @@
                             <th><i class="bi bi-check2-all"></i></th>
                             <th><i class="bi bi-trash"></i></th>
                         </tr></thead>
-                        <tbody id="myTableMaintenanceBody"></tbody>
+                        <tbody id="myTableMaintenanceDoneBody"></tbody>
                     </table>
                 </div>
             </div>
