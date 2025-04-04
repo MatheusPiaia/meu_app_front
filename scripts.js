@@ -183,6 +183,15 @@ const insertButtonEdit = (parent) => {
     txt.className = "bi bi-check-lg";
     span.appendChild(txt);
     parent.appendChild(span);
+
+    /*
+    span.classList.add("tooltip-container");
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("tooltip-text");
+    tooltip.textContent = "Alterar Status para 'Finalizado'";      
+    botao.appendChild(tooltip);      
+    container.appendChild(span);
+    */
   }
 
   const insertButtonWaiting = (parent) => {
@@ -233,6 +242,62 @@ const removeElement = () => {
       }
     }
   }
+
+/*
+  --------------------------------------------------------------------------------------
+  Função para chamar o PATCH para alteração dos status ao clicar nos botões
+  --------------------------------------------------------------------------------------
+*/
+
+const alterStatusDoing = () => {
+  let doing = document.getElementsByClassName("doing");
+  let i;
+  for(i=0; i < doing.length; i++) {
+    doing[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      const idEquipament = div.getElementsByTagName('td')[0].innerHTML;
+      alterMaintenanceStatus(idEquipament, "Em manutencao");
+    } 
+  }
+}
+
+const alterStatusDone = () => {
+  let done = document.getElementsByClassName("done");
+  let i;
+  for (i=0; i < done.length; i++){
+    done[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      const idEquipament = div.getElementsByTagName('td')[0].innerHTML;
+      alterMaintenanceStatus(idEquipament, "Finalizado");
+    }
+  }
+}
+
+const alterStatusQueue = () => {
+  let queue = document.getElementsByClassName('queue');
+  let i;
+  for (i=0; i < queue.length; i++){
+    queue[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      const idEquipament = div.getElementsByTagName('td')[0].innerHTML;
+      alterMaintenanceStatus(idEquipament, "Na fila");
+    }
+  }
+}
+
+const alterStatusWaiting = () => {
+  let waiting = document.getElementsByClassName('waiting');
+  let i;
+  for (i=0; i < waiting.length; i++){
+    waiting[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      const idEquipament = div.getElementsByTagName('td')[0].innerHTML;
+      alterMaintenanceStatus(idEquipament, "Aguardando peca");
+    }
+  }
+}
+
+    
 
 /*
   --------------------------------------------------------------------------------------
@@ -438,6 +503,12 @@ const newTechnician = () => {
 }
 
 
+
+/* ------------------------------------------------------------------------
+    FUNÇÕES REFERENTES A TELA DE MANUTENÇÕES
+    -----------------------------------------------------------------------
+*/
+
 async function postMaintenance(equipamentSelect, idTechSelect, newStatus, newType, newDate, newTime, newComment){
   const formData = new FormData();
   const date = document.getElementById("newDate").value;
@@ -519,15 +590,40 @@ async function getMaintenances(status){
 }
 
 
+async function alterMaintenanceStatus(idEquipament, newStatus){
+    let formData = new FormData();
+    formData.append("status", newStatus);
+    try{
+      let response = await fetch(`http://127.0.0.1:5000/manutencao/${idEquipament}`, {
+        method: "PATCH",
+        body: formData
+      })
+      if(!response.ok){
+        throw new Error(`Erro HTTP! Status: ${response.status}`);
+      }
+      getMaintenancesStatus();      
+    }
+    catch (error) {
+      console.error("Erro ao alterar status da manutenção", error);
+      alert("Erro ao alterar status da Manutenção!")
+      return null;
+    } 
+}
+
+
 
 const insertMaintenanceList = (item, status) => {  
-    let maintenance = [item.nome_equipamento, item.matricula_tecnico, item.tipo_manutencao, item.comentario, item.previsao_conclusao];
+    let maintenance = [item.id, item.nome_equipamento, item.matricula_tecnico, item.tipo_manutencao, item.comentario, item.previsao_conclusao];
     let tableMaintenance = document.getElementById(getIdStatusTable(status));
     let row = tableMaintenance.insertRow();
 
     for (var i = 0; i < maintenance.length; i++) {
         var cel = row.insertCell(i);
         cel.textContent = maintenance[i];
+
+        if(i === 0){
+          cel.classList.add("hidden");
+        }
       }
     if(status === "Em manutencao"){
       insertButtonDone(row.insertCell(-1));
@@ -556,5 +652,10 @@ const insertMaintenanceList = (item, status) => {
     document.getElementById("newDate").value="";
     document.getElementById("newTime").value="";
     document.getElementById("newComment").value="";
+
+    alterStatusDoing();
+    alterStatusDone();
+    alterStatusQueue();
+    alterStatusWaiting();
 }
 
