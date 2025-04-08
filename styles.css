@@ -55,7 +55,7 @@
     grid-row-start: 1;
     grid-row-end: 1;
     
-    min-height: 300px;
+    min-height: 200px;
 }
 
 .item-b{
@@ -108,8 +108,14 @@
     cursor: pointer;
 }
 
-.edit:hover {
+.queue:hover {
     color: green;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+.done:hover, .waiting:hover, .doing:hover, .check:hover{
+    color: #3f36f4;
     font-weight: bolder;
     cursor: pointer;
 }
@@ -136,45 +142,3 @@ tbody > tr:hover {
 .hidden {
     display: none;
 }
-
-.tooltip-container {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-  }
-
-  .tooltip-text {
-    visibility: hidden;
-    width: 120px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 8px;
-    border-radius: 6px;
-
-    
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .tooltip-container:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-  }
-
-
-  .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: #333 transparent transparent transparent;
-  }

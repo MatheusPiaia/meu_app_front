@@ -134,7 +134,12 @@ async function deleteEquipament(newEquipament){
       method: "DELETE",      
     });
 
-    if(!response.ok){
+    if(!response.ok){      
+      if (response.status === 400) {
+        const errorData = await response.json();
+        alert(`Erro ao deletar equipamento: ${errorData.mesage}`);
+        return;
+      }
       throw new Error(`Erro HTTP! Status: ${response.status}`);
     }
     getEquipaments();
@@ -158,6 +163,7 @@ const insertButton = (parent) => {
     span.className = "close";
     span.appendChild(txt);
     parent.appendChild(span);
+    span.title = "Remover";
   }
 
 /*
@@ -166,13 +172,14 @@ const insertButton = (parent) => {
   --------------------------------------------------------------------------------------
 */
 
-const insertButtonEdit = (parent) => {
+const insertButtonQueue = (parent) => {
     let span = document.createElement("span");
     let txt = document.createElement("i");
-    span.className = "edit";
-    txt.className = "bi bi-pencil-square";
+    span.className = "queue";
+    txt.className = "bi bi-clock";
     span.appendChild(txt);
     parent.appendChild(span);
+    span.title = "Alterar Status para Na";
   }
 
 
@@ -183,15 +190,8 @@ const insertButtonEdit = (parent) => {
     txt.className = "bi bi-check-lg";
     span.appendChild(txt);
     parent.appendChild(span);
+    span.title = "Alterar Status para Finalizado";
 
-    /*
-    span.classList.add("tooltip-container");
-    const tooltip = document.createElement("div");
-    tooltip.classList.add("tooltip-text");
-    tooltip.textContent = "Alterar Status para 'Finalizado'";      
-    botao.appendChild(tooltip);      
-    container.appendChild(span);
-    */
   }
 
   const insertButtonWaiting = (parent) => {
@@ -201,6 +201,7 @@ const insertButtonEdit = (parent) => {
     txt.className = "bi bi-hourglass-split";
     span.appendChild(txt);
     parent.appendChild(span);
+    span.title = "Alterar Status para Aguardando Peças";
   }
 
   const insertButtonDoing = (parent) => {
@@ -210,6 +211,7 @@ const insertButtonEdit = (parent) => {
     txt.className = "bi bi-tools";
     span.appendChild(txt);
     parent.appendChild(span);
+    span.title = "Alterar Status para Em Manutenção";
   }
 
   const insertButtonCheck = (parent) => {
@@ -297,6 +299,18 @@ const alterStatusWaiting = () => {
   }
 }
 
+const alterStatusCheck = () => {
+  let check = document.getElementsByClassName('check');
+  let i;  
+  for (i=0; i< check.length; i++){
+    check[i].onclick = function (){
+      let div = this.parentElement.parentElement;
+      const idEquipament = div.getElementsByTagName('td')[0].innerHTML;
+      deleteMaintenance(idEquipament);      
+    }
+  }
+}
+
     
 
 /*
@@ -331,8 +345,7 @@ const insertEquipamentList = (equipamentName, Model, Sector, Impact) => {
     for (var i = 0; i < equipament.length; i++) {
         var cel = row.insertCell(i);
         cel.textContent = equipament[i];
-      }
-      insertButtonEdit(row.insertCell(-1))
+      }      
       insertButton(row.insertCell(-1))      
       document.getElementById("newEquipament").value = "";
       document.getElementById("newModel").value = "";
@@ -434,6 +447,11 @@ async function deleteTechnician(newTechnicianId){
     });
 
     if(!response.ok){
+      if (response.status === 400) {
+        const errorData = await response.json();
+        alert(`Erro ao deletar técnico: ${errorData.mesage}`);
+        return;
+      }
       throw new Error(`Erro HTTP! Status: ${response.status}`);
     }
     getTechnicians();
@@ -476,8 +494,7 @@ const insertTechnicianList = (technicianName, technicianId, Shift) => {
   for (var i = 0; i < technician.length; i++) {
       var cel = row.insertCell(i);
       cel.textContent = technician[i];
-    }
-    insertButtonEdit(row.insertCell(-1))
+    }    
     insertButton(row.insertCell(-1))      
     document.getElementById("newTechnician").value = "";
     document.getElementById("newTechnicianId").value = "";
@@ -575,11 +592,17 @@ async function getMaintenances(status){
       throw new Error(`Erro HTTP! Status: ${response.status}`);
     } 
     
-    let data = await response.json();    
-    document.getElementById(getIdStatusTable(status)).innerHTML = "";      
-    data.manutencoes.forEach(item => {
-    insertMaintenanceList(item, status);
+    let data = await response.json();   
+    console.log(data);
+    
+    document.getElementById(getIdStatusTable(status)).innerHTML = "";
+    if(data.manutencoes === undefined){
+      console.log("Lista vazia para esse status");
+    }else {      
+      data.manutencoes.forEach(item => {
+      insertMaintenanceList(item, status);
     })
+    }
     
   }
   catch (error) {
@@ -610,6 +633,24 @@ async function alterMaintenanceStatus(idEquipament, newStatus){
     } 
 }
 
+async function deleteMaintenance(id){
+  try{
+    let response = await fetch(`http://127.0.0.1:5000/manutencao?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",      
+    });
+
+    if(!response.ok){
+      throw new Error(`Erro HTTP! Status: ${response.status}`);
+    }
+    getMaintenancesStatus();
+    alert("Manutenção removida da base");
+  }
+  catch{
+    console.error("Erro ao deletar manutenção", error);
+    alert("Erro ao deletar manutenção");
+    return null;
+  }
+}
 
 
 const insertMaintenanceList = (item, status) => {  
@@ -628,16 +669,15 @@ const insertMaintenanceList = (item, status) => {
     if(status === "Em manutencao"){
       insertButtonDone(row.insertCell(-1));
       insertButtonWaiting(row.insertCell(-1));
-      insertButtonEdit(row.insertCell(-1));      
+      insertButtonQueue(row.insertCell(-1));      
     }
     else if(status === "Na fila"){
       insertButtonDoing(row.insertCell(-1));
-      insertButtonWaiting(row.insertCell(-1));
-      insertButtonEdit(row.insertCell(-1));
+      insertButtonWaiting(row.insertCell(-1));      
     }
     else if(status === "Aguardando peca"){
       insertButtonDoing(row.insertCell(-1));
-      insertButtonEdit(row.insertCell(-1));
+      insertButtonQueue(row.insertCell(-1));
 
     }
     else if(status === "Finalizado"){  
@@ -657,5 +697,24 @@ const insertMaintenanceList = (item, status) => {
     alterStatusDone();
     alterStatusQueue();
     alterStatusWaiting();
+    alterStatusCheck(); 
+    removeMaintenance();
+}
+
+const removeMaintenance = () => {
+  let close = document.getElementsByClassName("close");    
+  let i;
+  console.log(close.length);
+  for (i = 0; i < close.length; i++) {
+    close[i].onclick = function () {
+      let div = this.parentElement.parentElement;
+      console.log(div);
+      const id = div.getElementsByTagName('td')[0].innerHTML
+      if (confirm("Você tem certeza?")) {          
+        deleteMaintenance(id);
+        
+      }
+    }
+  }
 }
 
