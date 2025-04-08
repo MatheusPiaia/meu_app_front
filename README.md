@@ -21,6 +21,7 @@ Fornecendo também informações como comentário (qual manutenção será reali
 - [x] Cadastro de Equipamentos
 - [x] Cadastro de Técnicos
 - [x] Cadastro de Manutenções separadas por Status
+- [x] Alteração do Status das Manutenções clicando nos botões dinâmicos 
 
 Abaixo segue tela inicial da aplicação
 
